@@ -1,16 +1,13 @@
-apiVersion: messaging.knative.dev/v1
-kind: Subscription
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
 metadata:
   name: slack-sink
   annotations:
     kafka.eventing.knative.dev/delivery.order: ordered
 spec:
-  channel:
-    apiVersion: messaging.knative.dev/v1beta1
-    kind: KafkaChannel
-    name: github-events
+  broker: default
   subscriber:
     ref:
       apiVersion: serving.knative.dev/v1
       kind: Service
-      name: slack-channel
+      name: slack-broker

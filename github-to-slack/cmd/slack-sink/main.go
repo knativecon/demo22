@@ -52,7 +52,7 @@ func sendToSlack(ceevent cloudevents.Event) error {
         iconURL = event.GetSender().GetAvatarURL()
 
         if strings.Trim(comment, " ") == "first comment" {
-            time.Sleep(10 * time.Second)
+            time.Sleep(2 * time.Second)
         }
     default:
         log.Printf("ignoring event %s\n", messageType)

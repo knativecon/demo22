@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-channel-config
+  namespace: knative-eventing
+data:
+  # Replace this with the URLs for your kafka cluster,
+  # which is in the format of my-cluster-kafka-bootstrap.my-kafka-namespace:9092.
+  bootstrap.servers: my-cluster-kafka-bootstrap.kafka:9092

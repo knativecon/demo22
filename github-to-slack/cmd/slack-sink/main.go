@@ -6,6 +6,7 @@ import (
     "log"
     "os"
     "strings"
+    "time"
 
     cloudevents "github.com/cloudevents/sdk-go/v2"
     "github.com/google/go-github/v47/github"
@@ -42,16 +43,24 @@ func sendToSlack(ceevent cloudevents.Event) error {
         header = threadTitle(issueNumber, title, name)
         comment = event.GetIssue().GetBody()
         iconURL = event.GetSender().GetAvatarURL()
-    case *github.IssueEvent:
+    case *github.IssueCommentEvent:
         issueNumber = event.GetIssue().GetNumber()
         title := event.GetIssue().GetTitle()
-        name = event.GetActor().GetLogin()
+        name = event.GetSender().GetLogin()
         header = threadTitle(issueNumber, title, name)
-        comment = event.GetIssue().GetBody()
-        iconURL = event.GetActor().GetAvatarURL()
+        comment = event.GetComment().GetBody()
+        iconURL = event.GetSender().GetAvatarURL()
+
+        if strings.Trim(comment, " ") == "first comment" {
+            time.Sleep(10 * time.Second)
+        }
+    default:
+        log.Printf("ignoring event %s\n", messageType)
+        return nil
     }
 
     // Ensure slack thread header exists and up-to-date
+
     thread, err := getThread(header)
     if err != nil {
         log.Printf("failed to get slack threads: %v", err)
@@ -64,9 +73,11 @@ func sendToSlack(ceevent cloudevents.Event) error {
             log.Printf("failed to create slack thread: %v", err)
             return err
         }
+        log.Printf("slack thread created: %s\n", header)
     }
 
     // Add (TODO: update) comment in thread
+    log.Printf("postin slack comment : %s\n", comment)
     if comment != "" {
         options := []slack.MsgOption{
             slack.MsgOptionText(comment, false),
@@ -81,6 +92,8 @@ func sendToSlack(ceevent cloudevents.Event) error {
             log.Printf("failed to post slack message: %v", err)
             return err
         }
+
+        log.Printf("slack comment posted: %s\n", comment)
     }
 
     return nil
@@ -116,6 +129,22 @@ func createThread(user string, header string) (string, error) {
     return ts, err
 }
 
+func findChannelID(channelName string) (string, error) {
+    // Retrieve channel ID
+    channels, _, err := slackapi.GetConversations(&slack.GetConversationsParameters{
+        Types: []string{"public_channel,private_channel"},
+    })
+    if err != nil {
+        log.Fatalf("failed to list slack channels: %v", err)
+    }
+    for _, c := range channels {
+        if c.Name == channelName {
+            return c.ID, nil
+        }
+    }
+    return "", fmt.Errorf("channel %s not found. Check the channel name spelling and the slack app has been installed in the channel")
+}
+
 func main() {
     run(context.Background())
 }
@@ -125,12 +154,20 @@ func run(ctx context.Context) {
     if slackToken == "" {
         log.Fatal("missing SLACK_TOKEN")
     }
-    channel = os.Getenv("SLACK_CHANNEL_ID")
-    if channel == "" {
-        log.Fatal("missing SLACK_CHANNEL_ID")
+    channelName := os.Getenv("SLACK_CHANNEL")
+    if channelName == "" {
+        log.Fatal("missing SLACK_CHANNEL")
     }
 
     slackapi = slack.New(slackToken)
+
+    id, err := findChannelID(channelName)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    channel = id
+    log.Printf("posting events to slack channel id #%s\n", channel)
 
     c, err := cloudevents.NewClientHTTP()
     if err != nil {

@@ -1,0 +1,6 @@
+apiVersion: messaging.knative.dev/v1beta1
+kind: KafkaChannel
+metadata:
+  name: github-events
+spec:
+  numPartitions: 1

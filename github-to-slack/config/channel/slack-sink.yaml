@@ -1,0 +1,17 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: slack-channel
+spec:
+  template:
+    spec:
+      containers:
+        - image: ko://knativecon/demo1/cmd/slack-sink
+          env:
+            - name: SLACK_CHANNEL
+              value: knativecon22-channel
+            - name: SLACK_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: slack-secret
+                  key: token

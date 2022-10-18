@@ -1,15 +1,15 @@
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: slack-crsx-discussions
+  name: slack-direct
 spec:
   template:
     spec:
       containers:
         - image: ko://knativecon/demo1/cmd/slack-sink
           env:
-            - name: SLACK_CHANNEL_ID
-              value: C03DU6G596Z
+            - name: SLACK_CHANNEL
+              value: knativecon22-direct
             - name: SLACK_TOKEN
               valueFrom:
                 secretKeyRef:

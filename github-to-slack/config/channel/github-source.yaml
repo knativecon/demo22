@@ -1,7 +1,7 @@
 apiVersion: sources.knative.dev/v1alpha1
 kind: GitHubSource
 metadata:
-  name: knativecon-issues
+  name: slack-persisted
 spec:
   eventTypes:
     - issues
@@ -17,6 +17,6 @@ spec:
       key: secretToken
   sink:
     ref:
-      apiVersion: serving.knative.dev/v1
-      kind: Service
-      name: slack-crsx-discussions
+      apiVersion: messaging.knative.dev/v1beta1
+      kind: KafkaChannel
+      name: github-events

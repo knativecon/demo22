@@ -71,7 +71,7 @@ GitHub -- (filter: issues, issue_comment) -> GitHub Adapter
 ```
 GitHub -- (filter: issues, issue_comment) -> GitHub Adapter 
                                           -> Kafka Channel
-                                          -> Slack Sink App (failing)
+                                          -> Slack Sink App (failing 3x)
                                           -> Slack
 ```
 
@@ -82,7 +82,26 @@ GitHub -- (filter: issues, issue_comment) -> GitHub Adapter
 3. In `knativecon22-direct` slack channel, observe no comments have been added
 4. In `knativecon22-channel` slack channel, observe the comment has been added
 
-### Pattern 4: not losing events - using DLS (TODO)
+### Pattern 4: Dead Letter Sink
+
+#### Topology
+
+```
+GitHub -- (filter: issues, issue_comment) -> GitHub Adapter 
+                                          -> Kafka Channel
+                                          -> Slack Sink App (non-recoverable failure)
+                                          -> Slack DLS
+```
+
+#### Steps
+
+1. Add a comment `some are permanent errors`
+2. Wait 3s
+3. In `knativecon22-direct` slack channel, observe no comments have been added
+4. In `knativecon22-channel` slack channel, observe no comments have been added
+5. In `knativecon22-dls` slack channel, observe the comment has been added
+
+
 
 ### Pattern 5: using broker vs channel (TODO)
 

@@ -13,6 +13,11 @@ spec:
     backoffDelay: PT1S
     backoffPolicy: linear
     retry: 5
+    deadLetterSink:
+      ref:
+        apiVersion: serving.knative.dev/v1
+        kind: Service
+        name: slack-dls
   subscriber:
     ref:
       apiVersion: serving.knative.dev/v1

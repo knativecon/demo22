@@ -17,6 +17,7 @@ var (
     slackapi *slack.Client
     channel  string
     retries  = make(map[int64]int)
+    dls      bool
 )
 
 func threadTitle(number int, title, name string) string {
@@ -52,11 +53,19 @@ func sendToSlack(ceevent cloudevents.Event) error {
         comment = event.GetComment().GetBody()
         iconURL = event.GetSender().GetAvatarURL()
 
+        if dls {
+            break
+        }
+
         if strings.Contains(comment, "delay") {
             time.Sleep(5 * time.Second)
         }
 
         if strings.Contains(comment, "error") {
+            if strings.Contains(comment, "permanent") {
+                return fmt.Errorf("really busy. please go away")
+            }
+
             count := retries[event.GetComment().GetID()]
             if count < 3 {
                 retries[event.GetComment().GetID()] = count + 1
@@ -168,6 +177,8 @@ func run(ctx context.Context) {
     if channelName == "" {
         log.Fatal("missing SLACK_CHANNEL")
     }
+
+    dls = strings.Contains(channelName, "dls")
 
     slackapi = slack.New(slackToken)
 

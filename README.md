@@ -38,7 +38,7 @@ GitHub -- (filter: issues, issue_comment) -> GitHub Adapter
 
 1. Create a GitHub issue. 
    * Title: `There is a bug.` 
-   * Body: `It's not working`
+   * Body: `Help me, please!`
 2. Observe Slack notifications in `knativecon22-direct`
  
 
@@ -53,25 +53,34 @@ GitHub -- (filter: issues, issue_comment) -> GitHub Adapter
                                           -> Slack
 ```
 
-### Steps
+#### Steps
 
 1. Add a comment to the previous created GitHub issue
-   * Body: `first comment`
+   * Body: `sorry for the delay`
 2. Add another comment (don't wait too long):
-   * Body: `second comment`
+   * Body: `no worries`
 3. In `knativecon22-direct` slack channel, observe the comments being out-of-order
 4. In `knativecon22-channel` slack channel, observe the comments being in-order
 
 **Note**: Both GitHub and the GitHub adapter don't guarantee ordering. 
 
-### Pattern 3: retries (TODO)
+### Pattern 3: retries 
 
+#### Topology
 
-GH -> GH Adapter -> SlackSinkAPP (send error) -> Slack
+```
+GitHub -- (filter: issues, issue_comment) -> GitHub Adapter 
+                                          -> Kafka Channel
+                                          -> Slack Sink App (failing)
+                                          -> Slack
+```
 
-- the slack sink throw an error (cannot connect to backend database)
+#### Steps
 
-GH -> GH Adapter -> Kafka (with retry) -> SlackSinkAPP (send error) -> Slack
+1. Add a comment `so many errors!`
+2. Wait 3s
+3. In `knativecon22-direct` slack channel, observe no comments have been added
+4. In `knativecon22-channel` slack channel, observe the comment has been added
 
 ### Pattern 4: not losing events - using DLS (TODO)
 

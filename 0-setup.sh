@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-kn quickstart kind --name demo1
+kn quickstart kind --name demo22

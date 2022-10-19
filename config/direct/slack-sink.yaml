@@ -6,7 +6,7 @@ spec:
   template:
     spec:
       containers:
-        - image: ko://knativecon/demo1/cmd/slack-sink
+        - image: ko://knativecon/demo22/cmd/slack-sink
           env:
             - name: SLACK_CHANNEL
               value: knativecon22-direct

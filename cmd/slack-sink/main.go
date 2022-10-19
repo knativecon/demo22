@@ -16,6 +16,7 @@ import (
 var (
     slackapi *slack.Client
     channel  string
+    retries  = make(map[int64]int)
 )
 
 func threadTitle(number int, title, name string) string {
@@ -51,9 +52,18 @@ func sendToSlack(ceevent cloudevents.Event) error {
         comment = event.GetComment().GetBody()
         iconURL = event.GetSender().GetAvatarURL()
 
-        if strings.Trim(comment, " ") == "first comment" {
+        if strings.Contains(comment, "delay") {
             time.Sleep(5 * time.Second)
         }
+
+        if strings.Contains(comment, "error") {
+            count := retries[event.GetComment().GetID()]
+            if count < 3 {
+                retries[event.GetComment().GetID()] = count + 1
+                return fmt.Errorf("busy. retry later on")
+            }
+        }
+
     default:
         log.Printf("ignoring event %s\n", messageType)
         return nil

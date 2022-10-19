@@ -26,3 +26,4 @@ cat config/templates/slack-secret.yaml\
 
 ko apply -f config/direct
 ko apply -f config/channel
+ko apply -f config/broker

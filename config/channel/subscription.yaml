@@ -9,6 +9,10 @@ spec:
     apiVersion: messaging.knative.dev/v1beta1
     kind: KafkaChannel
     name: github-events
+  delivery:
+    backoffDelay: PT1S
+    backoffPolicy: linear
+    retry: 5
   subscriber:
     ref:
       apiVersion: serving.knative.dev/v1

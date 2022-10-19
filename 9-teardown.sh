@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-kind delete cluster --name demo1
+kind delete cluster --name demo22

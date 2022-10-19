@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 export KO_DOCKER_REPO=kind.local
-export KIND_CLUSTER_NAME=demo1
+export KIND_CLUSTER_NAME=demo22
 
 echo Installing the GitHub source add-on
 

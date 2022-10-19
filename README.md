@@ -44,6 +44,11 @@ GitHub -- (filter: issues, issue_comment) -> GitHub Adapter
    * Body: `Help me, please!`
 2. Observe Slack notifications in `knativecon22-direct`
  
+#### When to use
+
+- Pro: lightweight
+- Cons: 
+
 
 ### Pattern 2: queue, ordered
 

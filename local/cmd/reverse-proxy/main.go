@@ -10,21 +10,23 @@ import (
 
 const baseURL = "http://github-adapter.knative-sources.127.0.0.1.sslip.io"
 
-func forward(r *http.Request, body []byte, path string) error {
-    // create a new url from the raw RequestURI sent by the client
-    log.Printf("proxying request to %s\n", path)
+func forward(r *http.Request, body []byte, path string) {
+    go func() {
+        // create a new url from the raw RequestURI sent by the client
+        log.Printf("proxying request to %s\n", path)
 
-    url := fmt.Sprintf("%s/%s", baseURL, path)
+        url := fmt.Sprintf("%s/%s", baseURL, path)
 
-    proxyReq, err := http.NewRequest(r.Method, url, bytes.NewReader(body))
-    proxyReq.Header = r.Header
+        proxyReq, err := http.NewRequest(r.Method, url, bytes.NewReader(body))
+        proxyReq.Header = r.Header
 
-    resp, err := http.DefaultClient.Do(proxyReq)
-    if err != nil {
-        return err
-    }
-    defer resp.Body.Close()
-    return nil
+        resp, err := http.DefaultClient.Do(proxyReq)
+        if err != nil {
+            log.Printf("error: %v", err)
+            return
+        }
+        defer resp.Body.Close()
+    }()
 }
 
 func main() {
@@ -35,27 +37,11 @@ func main() {
             http.Error(w, err.Error(), http.StatusInternalServerError)
             return
         }
-        //
-        //// you can reassign the body if you need to parse it as multipart
-        //r.Body = io.NopCloser(bytes.NewReader(body))
+        r.Body.Close()
 
-        err = forward(r, body, "default/slack-persisted")
-        if err != nil {
-            http.Error(w, err.Error(), http.StatusBadGateway)
-            return
-        }
-
-        err = forward(r, body, "default/broker")
-        if err != nil {
-            http.Error(w, err.Error(), http.StatusBadGateway)
-            return
-        }
-
-        err = forward(r, body, "default/slack-direct")
-        if err != nil {
-            http.Error(w, err.Error(), http.StatusBadGateway)
-            return
-        }
+        forward(r, body, "default/slack-persisted")
+        forward(r, body, "default/broker")
+        forward(r, body, "default/slack-direct")
     }
 
     http.HandleFunc("/", handler)

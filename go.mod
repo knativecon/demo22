@@ -1,4 +1,4 @@
-module knativecon/demo1
+module knativecon/demo22
 
 go 1.19
 

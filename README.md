@@ -34,6 +34,9 @@ GitHub -- (filter: issues, issue_comment) -> GitHub Adapter
                                           -> Slack
 ```
 
+
+![topology](./doc/pattern1.drawio.png)
+
 #### Steps
 
 1. Create a GitHub issue. 
@@ -48,7 +51,7 @@ GitHub -- (filter: issues, issue_comment) -> GitHub Adapter
 
 ```
 GitHub -- (filter: issues, issue_comment) -> GitHub Adapter 
-                                          -> Kafka Channel
+                                          -> Channel (Kafka)
                                           -> Slack Sink App 
                                           -> Slack
 ```
@@ -70,7 +73,7 @@ GitHub -- (filter: issues, issue_comment) -> GitHub Adapter
 
 ```
 GitHub -- (filter: issues, issue_comment) -> GitHub Adapter 
-                                          -> Kafka Channel
+                                          -> Channel (Kafka)
                                           -> Slack Sink App (failing 3x)
                                           -> Slack
 ```
@@ -88,10 +91,11 @@ GitHub -- (filter: issues, issue_comment) -> GitHub Adapter
 
 ```
 GitHub -- (filter: issues, issue_comment) -> GitHub Adapter 
-                                          -> Kafka Channel
+                                          -> Channel (Kafka)
                                           -> Slack Sink App (non-recoverable failure)
                                           -> Slack DLS
 ```
+
 
 #### Steps
 
@@ -102,9 +106,18 @@ GitHub -- (filter: issues, issue_comment) -> GitHub Adapter
 5. In `knativecon22-dls` slack channel, observe the comment has been added
 
 
-
 ### Pattern 5: using broker vs channel (TODO)
 
-GH1 -(filter: issues, issue_comment) > ... GH Adapter -> Broker - (issues) > aggregations - does not care where it's coming from.
-GH2 -(filter: issues, issue_comment) > ... GH Adapter -> Broker - (issues) > collect metrics?
+#### Topology
 
+```
+GitHub -- (filter: issues, issue_comment) -> GitHub Adapter 
+                                          -> Broker
+                                          - repo=x -> Aggregator App 
+                                          -> Slack
+                                          
+GitHub -- (filter: issues, issue_comment) -> GitHub Adapter 
+                                          -> Broker
+                                          - repo=y -> Aggregator App 
+                                          -> Slack                                         
+```

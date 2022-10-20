@@ -37,11 +37,13 @@ GitHub comments are directly mirrored to a slack channel.
    * Body: `Help me, please!`
 2. Observe Slack notifications in `knativecon22-direct`
  
-#### When to use
+#### Pros and Cons
 
-- Pro: lightweight
-- Cons: 
 
+- Pro: easy to use
+- 
+- Con: no ordering guarantee
+- Con: events can be lost
 
 ### Pattern 2: queue, ordered
 
@@ -64,11 +66,18 @@ GitHub comments are directly mirrored to a slack channel.
 
 #### Topology
 
-```
-GitHub -- (filter: issues, issue_comment) -> GitHub Adapter 
-                                          -> Channel (Kafka)
-                                          -> Slack Sink App (failing 3x)
-                                          -> Slack
+![topology](./doc/pattern3.drawio.png)
+
+#### Specification
+
+```yaml
+...
+spec:
+  delivery:
+    backoffDelay: PT1S
+    backoffPolicy: linear
+    retry: 5
+...
 ```
 
 #### Steps
@@ -82,13 +91,7 @@ GitHub -- (filter: issues, issue_comment) -> GitHub Adapter
 
 #### Topology
 
-```
-GitHub -- (filter: issues, issue_comment) -> GitHub Adapter 
-                                          -> Channel (Kafka)
-                                          -> Slack Sink App (non-recoverable failure)
-                                          -> Slack DLS
-```
-
+![topology](./doc/pattern4.drawio.png)
 
 #### Steps
 

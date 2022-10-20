@@ -28,13 +28,6 @@ GitHub comments are directly mirrored to a slack channel.
 
 #### Topology 
 
-```
-GitHub -- (filter: issues, issue_comment) -> GitHub Adapter   
-                                          -> Slack Sink App 
-                                          -> Slack
-```
-
-
 ![topology](./doc/pattern1.drawio.png)
 
 #### Steps
@@ -53,13 +46,8 @@ GitHub -- (filter: issues, issue_comment) -> GitHub Adapter
 ### Pattern 2: queue, ordered
 
 #### Topology
-
-```
-GitHub -- (filter: issues, issue_comment) -> GitHub Adapter 
-                                          -> Channel (Kafka)
-                                          -> Slack Sink App 
-                                          -> Slack
-```
+ 
+![topology](./doc/pattern2.drawio.png)
 
 #### Steps
 

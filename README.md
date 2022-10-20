@@ -1,6 +1,7 @@
 # Basic Eventing Patterns
 
-This projects explore several basic [Knative Eventing](https://knative.dev/docs/eventing/) patterns.
+This projects explore several basic [Knative Eventing](https://knative.dev/docs/eventing/) patterns via an 
+application mirroring GitHub issues to Slack
 
 
 ## Installing
@@ -24,8 +25,6 @@ The default configuration listens for events coming from [knativecon/demo22](htt
 
 ### Pattern 1: direct delivery
 
-GitHub comments are directly mirrored to a slack channel.
-
 #### Topology 
 
 ![topology](./doc/pattern1.drawio.png)
@@ -35,13 +34,12 @@ GitHub comments are directly mirrored to a slack channel.
 1. Create a GitHub issue. 
    * Title: `There is a bug.` 
    * Body: `Help me, please!`
-2. Observe Slack notifications in `knativecon22-direct`
+2. Observe Slack notifications in `kn-direct`
  
 #### Pros and Cons
 
-
 - Pro: easy to use
-- 
+- Pro: lightweight
 - Con: no ordering guarantee
 - Con: events can be lost
 
@@ -57,10 +55,16 @@ GitHub comments are directly mirrored to a slack channel.
    * Body: `sorry for the delay`
 2. Add another comment (don't wait too long):
    * Body: `no worries`
-3. In `knativecon22-direct` slack channel, observe the comments being out-of-order
-4. In `knativecon22-channel` slack channel, observe the comments being in-order
+3. In `kn-direct` slack channel, observe the comments being out-of-order
+4. In `kn-channel` slack channel, observe the comments being in-order
 
 **Note**: Both GitHub and the GitHub adapter don't guarantee ordering. 
+
+#### Pros and Cons
+
+- Pro: event order is preserved (see notes below)
+- Con: external dependency (in this example Apache Kafka)
+- Con: events can be lost
 
 ### Pattern 3: retries 
 
@@ -68,7 +72,7 @@ GitHub comments are directly mirrored to a slack channel.
 
 ![topology](./doc/pattern3.drawio.png)
 
-#### Specification
+#### Delivery Specification
 
 ```yaml
 ...
@@ -80,12 +84,18 @@ spec:
 ...
 ```
 
+
 #### Steps
 
 1. Add a comment `so many errors!`
 2. Wait 3s
-3. In `knativecon22-direct` slack channel, observe no comments have been added
-4. In `knativecon22-channel` slack channel, observe the comment has been added
+3. In `kn-direct` slack channel, observe no comments have been added
+4. In `kn-channel` slack channel, observe the comment has been added
+
+#### Pros and Cons
+
+- Pro: no event left behind
+- Con: some events left behind (see below)
 
 ### Pattern 4: Dead Letter Sink
 
@@ -93,27 +103,32 @@ spec:
 
 ![topology](./doc/pattern4.drawio.png)
 
+#### Delivery Specification
+
+```yaml
+...
+deadLetterSink:
+  ref:
+    apiVersion: serving.knative.dev/v1
+    kind: Service
+    name: slack-dls
+```
+
 #### Steps
 
 1. Add a comment `some are permanent errors`
 2. Wait 3s
-3. In `knativecon22-direct` slack channel, observe no comments have been added
-4. In `knativecon22-channel` slack channel, observe no comments have been added
-5. In `knativecon22-dls` slack channel, observe the comment has been added
+3. In `kn-direct` slack channel, observe no comments have been added
+4. In `kn-channel` slack channel, observe no comments have been added
+5. In `kn-dls` slack channel, observe the comment has been added
 
+#### Pros and Cons
 
-### Pattern 5: using broker vs channel (TODO)
+- Pro: no event left behind
+
+### Pattern 5: broker vs channel 
 
 #### Topology
 
-```
-GitHub -- (filter: issues, issue_comment) -> GitHub Adapter 
-                                          -> Broker
-                                          - repo=x -> Aggregator App 
-                                          -> Slack
-                                          
-GitHub -- (filter: issues, issue_comment) -> GitHub Adapter 
-                                          -> Broker
-                                          - repo=y -> Aggregator App 
-                                          -> Slack                                         
-```
+![topology](./doc/pattern5.drawio.png)
+

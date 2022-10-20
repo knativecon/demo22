@@ -9,7 +9,7 @@ spec:
         - image: ko://knativecon/demo22/cmd/slack-sink
           env:
             - name: SLACK_CHANNEL
-              value: knativecon22-channel
+              value: kn-channel
             - name: SLACK_TOKEN
               valueFrom:
                 secretKeyRef:

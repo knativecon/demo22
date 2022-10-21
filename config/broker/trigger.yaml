@@ -7,7 +7,7 @@ spec:
   filter:
     attributes:
       type: dev.knative.source.github.issues
-      repo: demo22
+      repository: demo22
   subscriber:
     ref:
       apiVersion: serving.knative.dev/v1

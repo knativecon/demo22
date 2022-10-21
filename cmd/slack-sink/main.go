@@ -21,7 +21,7 @@ var (
 )
 
 func threadTitle(number int, title, name string) string {
-    return fmt.Sprintf("%s #%d by %s", title, number, name)
+    return fmt.Sprintf("%s (#%d by %s)", title, number, name)
 }
 
 func sendToSlack(ceevent cloudevents.Event) error {

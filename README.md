@@ -41,9 +41,9 @@ The default configuration listens for events coming from [knativecon/demo22](htt
 - Pro: easy to use
 - Pro: lightweight
 - Con: no ordering guarantee
-- Con: events can be lost
+- Con: events can be lost (e.g. slack is unreachable, or token expired, etc...)
 
-### Pattern 2: queue, ordered
+### Pattern 2: persistent queue, ordered
 
 #### Topology
  
@@ -58,13 +58,13 @@ The default configuration listens for events coming from [knativecon/demo22](htt
 3. In `kn-direct` slack channel, observe the comments being out-of-order
 4. In `kn-channel` slack channel, observe the comments being in-order
 
-**Note**: Both GitHub and the GitHub adapter don't guarantee ordering. 
-
 #### Pros and Cons
 
 - Pro: event order is preserved (see notes below)
 - Con: external dependency (in this example Apache Kafka)
 - Con: events can be lost
+
+**Note**: Both GitHub and the GitHub adapter don't guarantee ordering.
 
 ### Pattern 3: retries 
 
@@ -131,4 +131,40 @@ deadLetterSink:
 #### Topology
 
 ![topology](./doc/pattern5.drawio.png)
+
+#### Steps
+
+1. Create an new issue in demo22
+2. Observe message in `kn-broker` slack channel
+3. Create an new issue in demo21
+4. No messages is posted
+
+#### Pros and Cons
+
+- Pro: only one bucket of events
+- Pro: built-in filtering (CloudEvent Attributes)
+- Cons: no ordering
+
+## Helpers
+
+### Printing logs:
+
+```sh
+stern slack -c user-container --template '{{color .PodColor (printf "%.15s" .PodName)}}: {{.Message}}{{printf "\n"}}'
+```
+
+### Local developement
+
+Start tunnel
+
+```shell
+ssh -R 80:localhost:8080 localhost.run
+```
+
+Start reverse proxy:
+
+```shell
+cd local
+go run cmd/reverse-proxy/main.go
+```
 

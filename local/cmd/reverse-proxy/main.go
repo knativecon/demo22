@@ -39,9 +39,10 @@ func main() {
         }
         r.Body.Close()
 
-        forward(r, body, "default/slack-persisted")
-        forward(r, body, "default/broker")
         forward(r, body, "default/slack-direct")
+        forward(r, body, "default/slack-persisted")
+        forward(r, body, "default/broker-demo21")
+        forward(r, body, "default/broker-demo22")
     }
 
     http.HandleFunc("/", handler)

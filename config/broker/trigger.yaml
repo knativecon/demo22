@@ -2,10 +2,12 @@ apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
   name: slack-sink
-  annotations:
-    kafka.eventing.knative.dev/delivery.order: ordered
 spec:
   broker: default
+  filter:
+    attributes:
+      type: dev.knative.source.github.issues
+      repo: demo22
   subscriber:
     ref:
       apiVersion: serving.knative.dev/v1

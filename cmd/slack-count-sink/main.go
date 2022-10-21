@@ -6,7 +6,6 @@ import (
     "log"
     "os"
     "strings"
-    "time"
 
     cloudevents "github.com/cloudevents/sdk-go/v2"
     "github.com/google/go-github/v47/github"
@@ -32,77 +31,29 @@ func sendToSlack(ceevent cloudevents.Event) error {
         return err
     }
 
-    issueNumber := 0
-    header := ""
     name := ""
-    comment := ""
+    message := ""
     iconURL := ""
+
     switch event := ghevent.(type) {
     case *github.IssuesEvent:
-        issueNumber = event.GetIssue().GetNumber()
-        title := event.GetIssue().GetTitle()
+
+        issueNumber := event.GetIssue().GetNumber()
+
         name = event.GetSender().GetLogin()
-        header = threadTitle(issueNumber, title, name)
-        comment = event.GetIssue().GetBody()
         iconURL = event.GetSender().GetAvatarURL()
-    case *github.IssueCommentEvent:
-        issueNumber = event.GetIssue().GetNumber()
-        title := event.GetIssue().GetTitle()
-        name = event.GetSender().GetLogin()
-        header = threadTitle(issueNumber, title, name)
-        comment = event.GetComment().GetBody()
-        iconURL = event.GetSender().GetAvatarURL()
-
-        if dls {
-            break
-        }
-
-        if strings.Contains(comment, "delay") {
-            time.Sleep(5 * time.Second)
-        }
-
-        if strings.Contains(comment, "error") {
-            if strings.Contains(comment, "permanent") {
-                return fmt.Errorf("really busy. please go away")
-            }
-
-            count := retries[event.GetComment().GetID()]
-            if count < 3 {
-                retries[event.GetComment().GetID()] = count + 1
-                return fmt.Errorf("busy. retry later on")
-            }
-        }
-
+        message = fmt.Sprintf("Issue #%d has been %s.", issueNumber, event.GetAction())
     default:
         log.Printf("ignoring event %s\n", messageType)
         return nil
     }
 
-    // Ensure slack thread header exists and up-to-date
-
-    thread, err := getThread(header)
-    if err != nil {
-        log.Printf("failed to get slack threads: %v", err)
-        return err
-    }
-
-    if thread == "" {
-        thread, err = createThread(name, header)
-        if err != nil {
-            log.Printf("failed to create slack thread: %v", err)
-            return err
-        }
-        log.Printf("slack thread created: %s\n", header)
-    }
-
-    // Add (TODO: update) comment in thread
-    log.Printf("posting slack comment : %s\n", comment)
-    if comment != "" {
+    log.Printf("posting slack message : %s\n", message)
+    if message != "" {
         options := []slack.MsgOption{
-            slack.MsgOptionText(comment, false),
+            slack.MsgOptionText(message, false),
             slack.MsgOptionUsername(name),
             slack.MsgOptionIconURL(iconURL),
-            slack.MsgOptionTS(thread),
         }
 
         _, _, err = slackapi.PostMessage(channel, options...)
@@ -112,40 +63,10 @@ func sendToSlack(ceevent cloudevents.Event) error {
             return err
         }
 
-        log.Printf("slack comment posted: %s\n", comment)
+        log.Printf("slack message posted: %s\n", message)
     }
 
     return nil
-}
-
-func getThread(text string) (string, error) {
-    // TODO: iterate
-    resp, err := slackapi.GetConversationHistory(&slack.GetConversationHistoryParameters{
-        ChannelID: channel,
-    })
-
-    if err != nil {
-        return "", err
-    }
-
-    for _, msg := range resp.Messages {
-        if msg.Text == text {
-            return msg.Timestamp, nil
-        }
-    }
-
-    return "", nil
-}
-
-func createThread(user string, header string) (string, error) {
-    options := []slack.MsgOption{
-        slack.MsgOptionText(header, false),
-        slack.MsgOptionAsUser(true),
-        slack.MsgOptionUsername(user),
-    }
-
-    _, ts, err := slackapi.PostMessage(channel, options...)
-    return ts, err
 }
 
 func findChannelID(channelName string) (string, error) {

@@ -1,0 +1,22 @@
+apiVersion: sources.knative.dev/v1alpha1
+kind: GitHubSource
+metadata:
+  name: broker-demo22
+spec:
+  eventTypes:
+    - issues
+    - issue_comment
+  ownerAndRepository: knativecon/demo22
+  accessToken:
+    secretKeyRef:
+      name: github-secret
+      key: accessToken
+  secretToken:
+    secretKeyRef:
+      name: github-secret
+      key: secretToken
+  sink:
+    ref:
+      apiVersion: eventing.knative.dev/v1
+      kind: Broker
+      name: default

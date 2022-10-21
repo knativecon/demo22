@@ -4,6 +4,9 @@ metadata:
   name: slack-channel
 spec:
   template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/min-scale: "1"
     spec:
       containers:
         - image: ko://knativecon/demo22/cmd/slack-sink

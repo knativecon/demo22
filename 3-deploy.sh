@@ -13,7 +13,7 @@ if [ -z ${SLACK_TOKEN+x} ]; then
 fi
 
 export KO_DOCKER_REPO=kind.local
-export KIND_CLUSTER_NAME=demo1
+export KIND_CLUSTER_NAME=demo22
 
 cat config/templates/github-secret.yaml\
  | sed "s/ACCESS_TOKEN/${GITHUB_TOKEN}/"\

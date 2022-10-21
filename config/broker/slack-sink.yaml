@@ -4,9 +4,12 @@ metadata:
   name: slack-broker
 spec:
   template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/min-scale: "1"
     spec:
       containers:
-        - image: ko://knativecon/demo22/cmd/slack-sink
+        - image: ko://knativecon/demo22/cmd/slack-count-sink
           env:
             - name: SLACK_CHANNEL
               value: kn-broker

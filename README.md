@@ -41,7 +41,8 @@ The default configuration listens for events coming from [knativecon/demo22](htt
 - Pro: easy to use
 - Pro: lightweight
 - Con: no ordering guarantee
-- Con: events can be lost (e.g. slack is unreachable, or token expired, etc...)
+- Con: no persistence, events can be lost (e.g. long slack outage, 
+  or token expired, too many requests, etc...)
 
 ### Pattern 2: persistent queue, ordered
 
@@ -61,8 +62,9 @@ The default configuration listens for events coming from [knativecon/demo22](htt
 #### Pros and Cons
 
 - Pro: event order is preserved (see notes below)
+- Pro: no more too many requests 
 - Con: external dependency (in this example Apache Kafka)
-- Con: events can be lost
+- Con: events can still be lost (eg. slack outage)
 
 **Note**: Both GitHub and the GitHub adapter don't guarantee ordering.
 
@@ -84,7 +86,6 @@ spec:
 ...
 ```
 
-
 #### Steps
 
 1. Add a comment `so many errors!`
@@ -94,8 +95,8 @@ spec:
 
 #### Pros and Cons
 
-- Pro: no event left behind
-- Con: some events left behind (see below)
+- Pro: less events left behind (transient errors)
+- Con: some events left behind (eg. poison pill message)
 
 ### Pattern 4: Dead Letter Sink
 
@@ -124,7 +125,7 @@ deadLetterSink:
 
 #### Pros and Cons
 
-- Pro: no event left behind
+- Pro: no events left behind (infinite retries, dls high-availability, etc...)
 
 ### Pattern 5: broker vs channel 
 
